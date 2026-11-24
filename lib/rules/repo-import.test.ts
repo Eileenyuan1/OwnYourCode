@@ -2,35 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { parseGitHubUrl } from './repo-import'
 
 describe('parseGitHubUrl', () => {
-  it('returns the owner and repo for https://github.com/{owner}/{repo}', () => {
-    expect(parseGitHubUrl('https://github.com/vercel/next.js')).toEqual({
-      ok: true,
-      owner: 'vercel',
-      repo: 'next.js',
-    })
-  })
-
-  it('accepts a trailing slash', () => {
-    expect(parseGitHubUrl('https://github.com/owner/repo/')).toEqual({
-      ok: true,
-      owner: 'owner',
-      repo: 'repo',
-    })
-  })
-
-  it('accepts a .git suffix and strips it from the repo name', () => {
-    expect(parseGitHubUrl('https://github.com/owner/repo.git')).toEqual({
-      ok: true,
-      owner: 'owner',
-      repo: 'repo',
-    })
-  })
-
-  it('accepts www.github.com', () => {
-    expect(parseGitHubUrl('https://www.github.com/owner/repo')).toEqual({
-      ok: true,
-      owner: 'owner',
-      repo: 'repo',
+  describe('returns the owner and repo', () => {
+    it.each([
+      ['https://github.com/vercel/next.js', 'vercel', 'next.js'],
+      ['https://github.com/owner/repo/', 'owner', 'repo'],
+      ['https://github.com/owner/repo.git', 'owner', 'repo'],
+      ['https://www.github.com/owner/repo', 'owner', 'repo'],
+    ])('%s', (url, owner, repo) => {
+      expect(parseGitHubUrl(url)).toEqual({ ok: true, owner, repo })
     })
   })
 
