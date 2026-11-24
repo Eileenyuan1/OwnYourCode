@@ -29,3 +29,8 @@ export function parseGitHubUrl(url: string): ParseGitHubUrlResult {
 
   return { ok: true, owner, repo }
 }
+
+export function shouldIgnorePath(path: string): boolean {
+  void path
+  return false
+}
