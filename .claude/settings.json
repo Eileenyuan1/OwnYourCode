@@ -1,0 +1,59 @@
+{
+  "permissions": {
+    "bashCommands": [
+      {
+        "pattern": "npm run (lint|test|build|dev)",
+        "action": "allow"
+      },
+      {
+        "pattern": "npm ci",
+        "action": "allow"
+      },
+      {
+        "pattern": "git status",
+        "action": "allow"
+      },
+      {
+        "pattern": "git diff.*",
+        "action": "allow"
+      },
+      {
+        "pattern": "git log.*",
+        "action": "allow"
+      },
+      {
+        "pattern": "git show.*",
+        "action": "allow"
+      },
+      {
+        "pattern": "git branch.*",
+        "action": "allow"
+      },
+      {
+        "pattern": "git commit.*",
+        "action": "ask"
+      },
+      {
+        "pattern": "git push(?! --force).*",
+        "action": "ask"
+      },
+      {
+        "pattern": "git push --force.*",
+        "action": "block",
+        "reason": "Force pushing can overwrite history and cause data loss"
+      },
+      {
+        "pattern": "rm -rf.*",
+        "action": "block",
+        "reason": "Recursive force removal is too destructive"
+      }
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ]
+  }
+}
