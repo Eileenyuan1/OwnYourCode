@@ -23,6 +23,9 @@ export function parseGitHubUrl(url: string): ParseGitHubUrlResult {
   const segments = parsed.pathname.replace(/\/$/, '').split('/').slice(1)
   if (segments.length !== 2) return INVALID
 
-  const [owner, repo] = segments
-  return { ok: true, owner, repo: repo.replace(/\.git$/, '') }
+  const owner = segments[0]
+  const repo = segments[1].replace(/\.git$/, '')
+  if (!owner || !repo) return INVALID
+
+  return { ok: true, owner, repo }
 }
