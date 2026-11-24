@@ -57,7 +57,11 @@ Without a classmate, a student uses AI Mock alone.
 ## 5. Business Rules (TDD targets)
 
 ### 5.1 Repo import
-- Host must be `github.com`; the path must be `/{owner}/{repo}`.
+- URL must be `https://github.com/{owner}/{repo}`:
+  - Scheme must be `https`; `http://` and strings that aren't URLs are rejected.
+  - Host must be `github.com` or `www.github.com`; any other host is rejected.
+  - Path must be exactly `/{owner}/{repo}`; a missing repo or extra segments are rejected.
+  - A trailing slash is allowed, and a `.git` suffix is stripped from the repo name.
 - Ignore: `node_modules/`, `.git/`, `dist/`, `build/`, `.next/`, lock files, images, videos, fonts, binaries.
 - Files larger than 100 KB are skipped.
 - More than 200 files after filtering → reject with an explanation.
