@@ -30,7 +30,43 @@ export function parseGitHubUrl(url: string): ParseGitHubUrlResult {
   return { ok: true, owner, repo }
 }
 
+const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next'])
+
+const LOCK_FILES = new Set([
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'bun.lock',
+  'bun.lockb',
+  'npm-shrinkwrap.json',
+  'Cargo.lock',
+  'Gemfile.lock',
+  'poetry.lock',
+  'Pipfile.lock',
+  'uv.lock',
+  'composer.lock',
+  'go.sum',
+])
+
+const IGNORED_EXTENSIONS = new Set([
+  // Images
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico', '.tiff', '.avif', '.heic', '.svg',
+  // Videos
+  '.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v',
+  // Fonts
+  '.woff', '.woff2', '.ttf', '.otf', '.eot',
+  // Binaries
+  '.exe', '.dll', '.so', '.dylib', '.bin', '.o', '.a', '.class', '.jar', '.wasm', '.pyc',
+  '.zip', '.tar', '.gz', '.tgz', '.7z', '.rar', '.pdf', '.mp3', '.wav',
+])
+
 export function shouldIgnorePath(path: string): boolean {
-  void path
-  return false
+  const segments = path.split('/')
+  const fileName = segments[segments.length - 1]
+
+  if (segments.slice(0, -1).some((dir) => IGNORED_DIRS.has(dir))) return true
+  if (LOCK_FILES.has(fileName)) return true
+
+  const dot = fileName.lastIndexOf('.')
+  return dot > 0 && IGNORED_EXTENSIONS.has(fileName.slice(dot).toLowerCase())
 }
