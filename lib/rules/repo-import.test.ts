@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { parseGitHubUrl, shouldIgnorePath } from './repo-import'
+import {
+  filterRepoFiles,
+  parseGitHubUrl,
+  shouldIgnorePath,
+  type RepoFile,
+} from './repo-import'
 
 describe('parseGitHubUrl', () => {
   describe('returns the owner and repo', () => {
@@ -128,6 +133,96 @@ describe('shouldIgnorePath', () => {
       'README.md',
     ])('%s', (path) => {
       expect(shouldIgnorePath(path)).toBe(false)
+    })
+  })
+})
+
+describe('filterRepoFiles', () => {
+  const file = (path: string, size = 1000): RepoFile => ({ path, size })
+  const sourceFiles = (count: number): RepoFile[] =>
+    Array.from({ length: count }, (_, i) => file(`src/file-${i}.ts`))
+
+  it('keeps normal files in their original order', () => {
+    const files = [file('src/b.ts'), file('README.md'), file('src/a.ts')]
+    expect(filterRepoFiles(files)).toEqual({ ok: true, files })
+  })
+
+  it('drops ignored paths', () => {
+    const result = filterRepoFiles([
+      file('src/index.ts'),
+      file('node_modules/react/index.js'),
+      file('public/logo.png'),
+      file('yarn.lock'),
+    ])
+    expect(result).toEqual({ ok: true, files: [file('src/index.ts')] })
+  })
+
+  describe('file size limit', () => {
+    it('keeps a file of exactly 102,400 bytes', () => {
+      const files = [file('src/at-limit.ts', 102_400)]
+      expect(filterRepoFiles(files)).toEqual({ ok: true, files })
+    })
+
+    it('skips a file of 102,401 bytes', () => {
+      const result = filterRepoFiles([
+        file('src/index.ts'),
+        file('src/too-big.ts', 102_401),
+      ])
+      expect(result).toEqual({ ok: true, files: [file('src/index.ts')] })
+    })
+  })
+
+  describe('file count limit', () => {
+    it('accepts exactly 200 files', () => {
+      const files = sourceFiles(200)
+      expect(filterRepoFiles(files)).toEqual({ ok: true, files })
+    })
+
+    it('rejects 201 files', () => {
+      expect(filterRepoFiles(sourceFiles(201)).ok).toBe(false)
+    })
+
+    it('explains the rejection with the file count and the limit', () => {
+      const result = filterRepoFiles(sourceFiles(245))
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error).toContain('245')
+        expect(result.error).toContain('200')
+      }
+    })
+
+    it('does not count files skipped for size', () => {
+      const small = sourceFiles(150)
+      const big = Array.from({ length: 100 }, (_, i) =>
+        file(`data/big-${i}.json`, 200_000),
+      )
+      expect(filterRepoFiles([...small, ...big])).toEqual({
+        ok: true,
+        files: small,
+      })
+    })
+
+    it('does not count ignored files', () => {
+      const kept = sourceFiles(150)
+      const ignored = Array.from({ length: 300 }, (_, i) =>
+        file(`node_modules/pkg/file-${i}.js`),
+      )
+      expect(filterRepoFiles([...kept, ...ignored])).toEqual({
+        ok: true,
+        files: kept,
+      })
+    })
+  })
+
+  describe('rejects a repo with no files left after filtering', () => {
+    it.each<[string, RepoFile[]]>([
+      ['empty input', []],
+      ['only ignored files', [file('node_modules/a.js'), file('logo.png')]],
+      ['only oversized files', [file('src/huge.ts', 500_000)]],
+    ])('%s', (_, files) => {
+      const result = filterRepoFiles(files)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.length).toBeGreaterThan(0)
     })
   })
 })
