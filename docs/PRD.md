@@ -62,7 +62,14 @@ Without a classmate, a student uses AI Mock alone.
   - Host must be `github.com` or `www.github.com`; any other host is rejected.
   - Path must be exactly `/{owner}/{repo}`; a missing repo or extra segments are rejected.
   - A trailing slash is allowed, and a `.git` suffix is stripped from the repo name.
-- Ignore: `node_modules/`, `.git/`, `dist/`, `build/`, `.next/`, lock files, images, videos, fonts, binaries.
+- Ignore these paths (repo-relative, forward slashes):
+  - Anything inside `node_modules/`, `.git/`, `dist/`, `build/`, or `.next/` at any depth. Only whole folder names match, so `src/build-utils.ts` and `.github/` are kept.
+  - Lock files at any depth: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock`, `bun.lockb`, `npm-shrinkwrap.json`, `Cargo.lock`, `Gemfile.lock`, `poetry.lock`, `Pipfile.lock`, `uv.lock`, `composer.lock`, `go.sum`.
+  - Files with these extensions, in any letter case:
+    - Images: `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.ico`, `.tiff`, `.avif`, `.heic`, `.svg`.
+    - Videos: `.mp4`, `.mov`, `.avi`, `.mkv`, `.webm`, `.m4v`.
+    - Fonts: `.woff`, `.woff2`, `.ttf`, `.otf`, `.eot`.
+    - Binaries: `.exe`, `.dll`, `.so`, `.dylib`, `.bin`, `.o`, `.a`, `.class`, `.jar`, `.wasm`, `.pyc`, `.zip`, `.tar`, `.gz`, `.tgz`, `.7z`, `.rar`, `.pdf`, `.mp3`, `.wav`.
 - Files larger than 100 KB are skipped.
 - More than 200 files after filtering → reject with an explanation.
 

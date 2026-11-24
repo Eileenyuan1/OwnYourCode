@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseGitHubUrl } from './repo-import'
+import { parseGitHubUrl, shouldIgnorePath } from './repo-import'
 
 describe('parseGitHubUrl', () => {
   describe('returns the owner and repo', () => {
@@ -70,5 +70,64 @@ describe('parseGitHubUrl', () => {
       expect(result.error).toEqual(expect.any(String))
       expect(result.error.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('shouldIgnorePath', () => {
+  describe('ignores files inside ignored directories at any depth', () => {
+    it.each([
+      'node_modules/react/index.js',
+      'packages/web/node_modules/lodash/index.js',
+      '.git/config',
+      'dist/index.js',
+      'packages/api/dist/server.js',
+      'build/main.js',
+      '.next/server/app.js',
+    ])('%s', (path) => {
+      expect(shouldIgnorePath(path)).toBe(true)
+    })
+  })
+
+  describe('ignores lock files at any depth', () => {
+    it.each(['package-lock.json', 'yarn.lock', 'apps/web/pnpm-lock.yaml'])(
+      '%s',
+      (path) => {
+        expect(shouldIgnorePath(path)).toBe(true)
+      },
+    )
+  })
+
+  describe('ignores images, videos, fonts and binaries', () => {
+    it.each([
+      'public/logo.png',
+      'public/icon.svg',
+      'assets/demo.mp4',
+      'public/fonts/inter.woff2',
+      'bin/tool.exe',
+      'lib/module.wasm',
+    ])('%s', (path) => {
+      expect(shouldIgnorePath(path)).toBe(true)
+    })
+  })
+
+  it('matches extensions case-insensitively', () => {
+    expect(shouldIgnorePath('public/Screenshot.PNG')).toBe(true)
+  })
+
+  describe('does not ignore normal source files', () => {
+    it.each([
+      'src/index.ts',
+      'src/build-utils.ts',
+      'docs/distance.md',
+      'src/rebuild/index.ts',
+      '.gitignore',
+      '.github/workflows/ci.yml',
+      'package.json',
+      'src/lock.ts',
+      'src/fonts.ts',
+      'README.md',
+    ])('%s', (path) => {
+      expect(shouldIgnorePath(path)).toBe(false)
+    })
   })
 })
