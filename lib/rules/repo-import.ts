@@ -77,7 +77,23 @@ export type FilterRepoFilesResult =
   | { ok: true; files: RepoFile[] }
   | { ok: false; error: string }
 
+const MAX_FILE_SIZE = 102_400
+const MAX_FILE_COUNT = 200
+
 export function filterRepoFiles(files: RepoFile[]): FilterRepoFilesResult {
-  void files
-  return { ok: false, error: 'not implemented' }
+  const kept = files.filter(
+    (file) => !shouldIgnorePath(file.path) && file.size <= MAX_FILE_SIZE,
+  )
+
+  if (kept.length === 0) {
+    return { ok: false, error: 'No supported source files found.' }
+  }
+  if (kept.length > MAX_FILE_COUNT) {
+    return {
+      ok: false,
+      error: `This repo has ${kept.length} files after filtering; the limit is ${MAX_FILE_COUNT}.`,
+    }
+  }
+
+  return { ok: true, files: kept }
 }
