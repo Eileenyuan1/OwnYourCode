@@ -70,3 +70,14 @@ export function shouldIgnorePath(path: string): boolean {
   const dot = fileName.lastIndexOf('.')
   return dot > 0 && IGNORED_EXTENSIONS.has(fileName.slice(dot).toLowerCase())
 }
+
+export type RepoFile = { path: string; size: number }
+
+export type FilterRepoFilesResult =
+  | { ok: true; files: RepoFile[] }
+  | { ok: false; error: string }
+
+export function filterRepoFiles(files: RepoFile[]): FilterRepoFilesResult {
+  void files
+  return { ok: false, error: 'not implemented' }
+}
