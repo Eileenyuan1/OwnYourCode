@@ -45,6 +45,15 @@ describe('parseGitHubUrl', () => {
     )
   })
 
+  describe('rejects an empty owner or repo name', () => {
+    it.each(['https://github.com//repo', 'https://github.com/owner/.git'])(
+      '%s',
+      (url) => {
+        expect(parseGitHubUrl(url).ok).toBe(false)
+      },
+    )
+  })
+
   describe('rejects extra path segments', () => {
     it.each([
       'https://github.com/owner/repo/tree/main',
