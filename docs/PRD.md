@@ -70,8 +70,10 @@ Without a classmate, a student uses AI Mock alone.
     - Videos: `.mp4`, `.mov`, `.avi`, `.mkv`, `.webm`, `.m4v`.
     - Fonts: `.woff`, `.woff2`, `.ttf`, `.otf`, `.eot`.
     - Binaries: `.exe`, `.dll`, `.so`, `.dylib`, `.bin`, `.o`, `.a`, `.class`, `.jar`, `.wasm`, `.pyc`, `.zip`, `.tar`, `.gz`, `.tgz`, `.7z`, `.rar`, `.pdf`, `.mp3`, `.wav`.
-- Files larger than 100 KB are skipped.
-- More than 200 files after filtering → reject with an explanation.
+- Files larger than 100 KB (102,400 bytes) are skipped; a file of exactly 102,400 bytes is kept.
+- More than 200 files after filtering → reject with an explanation that gives the file count and the limit. Exactly 200 is accepted. Ignored and skipped files don't count toward the limit.
+- No files left after filtering → reject with an explanation.
+- Kept files are returned in their original order.
 
 ### 5.2 Mastery score
 - Start at 0 ("not started").
