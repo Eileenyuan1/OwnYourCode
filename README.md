@@ -21,7 +21,7 @@ npm test
 ## Documentation
 
 - [PRD](docs/PRD.md)
-- [Agent instructions](AGENTS.md)
+- [Agent instructions](CLAUDE.md)
 - [Plan](docs/plans/repo-import-page.md)
 - [Session log](docs/session-log.md)
-- [Reflection](docs/reflection.md)
+- [HW4 reflection](docs/hw4-reflection.md)
