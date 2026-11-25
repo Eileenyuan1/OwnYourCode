@@ -1,17 +1,29 @@
 # Reflection: Explore, Plan, Implement, Commit
 
-This draft covers my Part 2 work on the repo import page. Eileen will add the Part 1 and Part 3 sections.
+Annotated log: [session-log.md](session-log.md).
 
-## How this workflow compares with how I used to work
+## 1. Compared with our previous approach
 
-Before this assignment, we moved from a plan straight into coding. We did not stop for this many rounds of review. We talked about planning before writing, but in Cursor the two steps were not strictly separated. Planning and editing happened in the same flow, so it was easy to start changing files before the approach was settled.
+**Planning and coding are now separate steps.** We used to move from a plan straight into code. In Cursor, planning and editing happened in one flow, so files often changed before the approach was settled. Claude Code makes the split explicit. Explore was read only. Plan mode could read and propose, but not edit. Implementation started only after the plan was saved to docs/plans/repo-import-page.md. The page then landed as three reviewable commits: GitHub client (d17de2a), importRepo (3c057e6), and the /import page (42f7b6e).
 
-Claude Code makes the split explicit. I had to press Shift+Tab and switch into plan mode before Claude was allowed to treat the design as ready. In that mode it could read the repo and propose a plan, but it did not edit the project until I approved the plan. I also stayed in manual mode instead of auto mode, so each file write stopped and waited for me. I read what it was about to change, then chose Yes. There were more confirmations than I was used to, but that kept us aligned. When I rejected a write by accident, nothing was changed, and I could tell it to continue. The three pieces landed as separate commits: the GitHub client (d17de2a), importRepo (3c057e6), and the /import page (42f7b6e). I checked the running page before we pushed. A real repository showed 26 kept files, and an http:// URL showed the expected error.
+**Tests became the spec.** We used to ask for a whole feature and test afterwards. Writing failing tests first forced decisions the PRD had left open: is a trailing slash allowed, is a file of exactly 100 KB kept, do skipped files count toward the 200 file limit. Each decision went into PRD §5.1 before any code existed, and Claude's job shrank to the minimum code that passes. Diffs stayed small and easy to review.
 
-In class we were told to spend most of our time planning instead of jumping into implementation. This workflow made that advice concrete. Explore was only for reading. Plan mode was only for the design. Implementation started after the plan was saved.
+**Review is still required.** All 17 URL tests were green while https://github.com//repo was still accepted with an empty owner. Code review found it, and we fixed it test first (cdb15c4, b5659c6). The permission setup was a bigger warning: Claude invented a "bashCommands" format that Claude Code does not support and said the rules appeared to work. We caught it by reading the official docs and retesting in default mode, since auto mode can approve commands on its own. We now treat "done" from Claude as a claim to verify.
 
-## Which context practices helped
+**Manual approval kept us aligned.** We stayed out of auto mode, so every file write paused for review. There were more confirmations than we were used to, but each one was a check that the diff still matched the plan, and an accidental rejection changed nothing.
 
-Plan mode was the most useful practice. It forced a pause between understanding the code and editing it. During the explore step I told Claude not to write code. It read lib/rules, the app, and the Next.js docs, then reported that parseGitHubUrl, shouldIgnorePath, and filterRepoFiles already existed and listed what the page still needed. That list became the plan, instead of Claude inventing a design while it was already editing.
+## 2. Context management that worked
 
-Saving the plan as docs/plans/repo-import-page.md was more reliable than leaving it in the chat. A chat can be compacted or forgotten. The file stayed in the repo as commit e2292c2, and the later commits followed it. Manual approval did the same job at a smaller scale. Each Yes was a check that the diff still matched the plan.
+**Imports instead of copies.** The first /init output pasted most of the PRD into CLAUDE.md. Replacing it with @docs/PRD.md and @AGENTS.md keeps one source of truth.
+
+**Decisions in files, not chat.** Every TDD edge case was committed to PRD §5.1, and the Part 2 plan was committed as a file (e2292c2). This made /clear safe: a fresh session rebuilds context from the repo, not from an old conversation.
+
+**/clear per task, /compact with a focus.** Each task started with /clear. In the long TDD session, /compact focused on the import rules, the TDD steps and the commit style; Claude then reread the source, tests and PRD and kept the same pattern without repetition.
+
+**Plan mode as a checkpoint.** Plan mode forced a pause between understanding the code and changing it. The explore step found that parseGitHubUrl, shouldIgnorePath and filterRepoFiles already existed, and that list became the plan.
+
+**Choose sessions explicitly.** claude --resume reopened the /init session to export its log. claude --continue once opened a different, more recent session, so we now pick from the --resume list.
+
+## Takeaway
+
+Planning first and testing first did not reduce review. They made each review smaller: a plan to approve, a test to read, a short diff to check. Every mistake we caught (an invented config format, a broken style rule, a missed edge case) was caught at one of those checkpoints.

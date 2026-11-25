@@ -8,7 +8,7 @@
 │                        ▘▘ ▝▝                       │                                                     │
 │                                                    │                                                     │
 │           Sonnet 4.5 · Claude Enterprise           │                                                     │
-│  /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode  │                                                     │
+│  ~/Desktop/NEU/GitHub/ownyourcode  │                                                     │
 ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 > /clear 
@@ -239,8 +239,8 @@ commit for each phase, and never call the real Claude API in tests.
 
      Tip: Use # to memorize shortcut to quickly add to CLAUDE.md
 
-⏺ Bash(wc -l /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
-  ⎿       123 /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
+⏺ Bash(wc -l ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
+  ⎿       123 ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
 
 ⏺ Read(CLAUDE.md)
   ⎿  Read 124 lines
@@ -316,8 +316,8 @@ commit for each phase, and never call the real Claude API in tests.
 
      Tip: Use # to memorize shortcut to quickly add to CLAUDE.md
 
-⏺ Bash(wc -l /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
-  ⎿       111 /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
+⏺ Bash(wc -l ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
+  ⎿       111 ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
 
 ⏺ Perfect! I've added the three new sections and streamlined the file to 111 lines (from the original
   133). Here's what I added:
@@ -430,8 +430,8 @@ Oh, and I don't like dashes. Please replace any " - " or "—" used as a dash wi
 
      Tip: Use # to memorize shortcut to quickly add to CLAUDE.md
 
-⏺ Bash(wc -l /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
-  ⎿       129 /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
+⏺ Bash(wc -l ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
+  ⎿       129 ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
 
 ⏺ Read(CLAUDE.md)
   ⎿  Read 130 lines
@@ -511,8 +511,8 @@ Oh, and I don't like dashes. Please replace any " - " or "—" used as a dash wi
 
      Tip: Use # to memorize shortcut to quickly add to CLAUDE.md
 
-⏺ Bash(wc -l /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
-  ⎿       113 /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
+⏺ Bash(wc -l ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
+  ⎿       113 ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
 
 ⏺ Update(CLAUDE.md)
   ⎿  Updated CLAUDE.md with 3 additions and 11 removals                                              
@@ -546,8 +546,8 @@ Oh, and I don't like dashes. Please replace any " - " or "—" used as a dash wi
 
      Tip: Use # to memorize shortcut to quickly add to CLAUDE.md
 
-⏺ Bash(wc -l /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
-  ⎿       105 /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
+⏺ Bash(wc -l ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md)
+  ⎿       105 ~/Desktop/NEU/GitHub/ownyourcode/CLAUDE.md
 
 ⏺ Read(CLAUDE.md)
   ⎿  Read 106 lines
@@ -597,15 +597,15 @@ Oh, and I don't like dashes. Please replace any " - " or "—" used as a dash wi
 
 > /export ~/Desktop/NEU/ownyourcode-logs/02-claude-md.txt 
   ⎿  Failed to export conversation: ENOENT: no such file or directory, open 
-     '/Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/~/Desktop/NEU/ownyourcode-logs/02-claude-md.txt'
+     '~/Desktop/NEU/GitHub/ownyourcode/~/Desktop/NEU/ownyourcode-logs/02-claude-md.txt'
 
-> /export /Users/eileenyuan/Desktop/NEU/ownyourcode-logs/02-claude-md.txt 
-  ⎿ Failed to export conversation: ENOENT: no such file or directory, open '/Users/eileenyuan/Desktop/NEU/Gi
-    tHub/ownyourcode/Users/eileenyuan/Desktop/NEU/ownyourcode-logs/02-claude-md.txt'
+> /export ~/Desktop/NEU/ownyourcode-logs/02-claude-md.txt 
+  ⎿ Failed to export conversation: ENOENT: no such file or directory, open '~/Desktop/NEU/Gi
+    tHub/ownyourcode~/Desktop/NEU/ownyourcode-logs/02-claude-md.txt'
 
-> /export /Users/eileenyuan/Desktop/NEU/ownyourcode/ownyourcode-logs/02-claude-md.txt 
-  ⎿ Failed to export conversation: ENOENT: no such file or directory, open '/Users/eileenyuan/Desktop/NEU/Gi
-    tHub/ownyourcode/Users/eileenyuan/Desktop/NEU/ownyourcode/ownyourcode-logs/02-claude-md.txt'
+> /export ~/Desktop/NEU/ownyourcode/ownyourcode-logs/02-claude-md.txt 
+  ⎿ Failed to export conversation: ENOENT: no such file or directory, open '~/Desktop/NEU/Gi
+    tHub/ownyourcode~/Desktop/NEU/ownyourcode/ownyourcode-logs/02-claude-md.txt'
 
 
 

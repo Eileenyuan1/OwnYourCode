@@ -1,7 +1,7 @@
 
  ▐▛███▜▌   Claude Code v2.0.37
 ▝▜█████▛▘  Sonnet 4.5 · Claude Enterprise
-  ▘▘ ▝▝    /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode
+  ▘▘ ▝▝    ~/Desktop/NEU/GitHub/ownyourcode
 
 > /clear 
   ⎿  (no content)
@@ -23,12 +23,12 @@ Personal settings should go in .claude/settings.local.json, so make sure
 ⏺ Read(.gitignore)
   ⎿  Read 42 lines
 
-⏺ Bash(ls -la /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/.claude 2>&1
+⏺ Bash(ls -la ~/Desktop/NEU/GitHub/ownyourcode/.claude 2>&1
       || echo "Directory does not exist")
   ⎿  total 0                                                     
-     drwxr-xr-x@  3 eileenyuan  staff   96 Nov 24 13:45 .
-     drwxr-xr-x@ 19 eileenyuan  staff  608 Nov 24 14:13 ..
-     drwxr-xr-x@  2 eileenyuan  staff   64 Nov 24 13:45 worktrees
+     drwxr-xr-x@  3 user  staff   96 Nov 24 13:45 .
+     drwxr-xr-x@ 19 user  staff  608 Nov 24 14:13 ..
+     drwxr-xr-x@  2 user  staff   64 Nov 24 13:45 worktrees
 
 ⏺ Now I'll create the .claude/settings.json file with the appropriate
   permissions and update .gitignore.
@@ -211,7 +211,7 @@ Personal settings should go in .claude/settings.local.json, so make sure
 
 
 ⏺ Bash(ls -la .env.local 2>&1 || echo "File does not exist")
-  ⎿  -rw-r--r--@ 1 eileenyuan  staff  16 Nov 24 14:17 .env.local
+  ⎿  -rw-r--r--@ 1 user  staff  16 Nov 24 14:17 .env.local
 
 ⏺ Bash(rm .env.local)
   ⎿  (No content)

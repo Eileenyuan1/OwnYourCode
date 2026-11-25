@@ -27,8 +27,6 @@ OwnYourCode imports a public GitHub repo, has an AI agent explore the real code,
 
 ## 3. Roles
 
-| Role | Can | Cannot |
-|---|---|---|
 Both roles are students. Roles are per Peer Mock session, so the same person can be a candidate on their own repo and an interviewer for a classmate.
 
 | Role | Can | Cannot |

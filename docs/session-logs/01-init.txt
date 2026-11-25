@@ -1,7 +1,7 @@
 
  ▐▛███▜▌   Claude Code v2.0.37
 ▝▜█████▛▘  Sonnet 4.5 · Claude Enterprise
-  ▘▘ ▝▝    /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode
+  ▘▘ ▝▝    ~/Desktop/NEU/GitHub/ownyourcode
 
 > /init is analyzing your codebase… 
 
@@ -47,19 +47,19 @@
 ⏺ Read(app/page.tsx)
   ⎿  Read 70 lines
 
-⏺ Bash(find /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode -type f -name
+⏺ Bash(find ~/Desktop/NEU/GitHub/ownyourcode -type f -name
       "*.ts" -o -name "*.tsx" | grep -E "(lib|utils|components|app)" | head
       -20)
-  ⎿ /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/app/layout.tsx    
-    /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/app/page.tsx
-    /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/node_modules/zod/s
+  ⎿ ~/Desktop/NEU/GitHub/ownyourcode/app/layout.tsx    
+    ~/Desktop/NEU/GitHub/ownyourcode/app/page.tsx
+    ~/Desktop/NEU/GitHub/ownyourcode/node_modules/zod/s
     … +35 lines (ctrl+o to expand)
 
 
-⏺ Bash(ls -la /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode)
+⏺ Bash(ls -la ~/Desktop/NEU/GitHub/ownyourcode)
   ⎿  total 520                                                
-     drwxr-xr-x@  18 eileenyuan  staff     576 Nov 24 13:50 .
-     drwxr-xr-x@  18 eileenyuan  staff     576 Nov 24 13:50 ..
+     drwxr-xr-x@  18 user  staff     576 Nov 24 13:50 .
+     drwxr-xr-x@  18 user  staff     576 Nov 24 13:50 ..
      … +21 lines (ctrl+o to expand)
 
 ⏺ Read(tsconfig.json)
@@ -219,7 +219,7 @@ codebase. Don't change any files and don't commit
 
 > /export ~/Desktop/NEU/ownyourcode-logs/01-init.txt 
   ⎿ Failed to export conversation: ENOENT: no such file or directory, open 
-    '/Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode/~/Desktop/NEU/ownyourc
+    '~/Desktop/NEU/GitHub/ownyourcode/~/Desktop/NEU/ownyourc
     ode-logs/01-init.txt'
 
 

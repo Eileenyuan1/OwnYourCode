@@ -1,7 +1,7 @@
 
  ▐▛███▜▌   Claude Code v2.0.37
 ▝▜█████▛▘  Sonnet 4.5 · Claude Enterprise
-  ▘▘ ▝▝    /Users/eileenyuan/Desktop/NEU/GitHub/ownyourcode
+  ▘▘ ▝▝    ~/Desktop/NEU/GitHub/ownyourcode
 
 > There are still two fixes needed. First, the PRD isn't actually 
 imported. "See docs/PRD.md" is just text. Please use real @imports: 

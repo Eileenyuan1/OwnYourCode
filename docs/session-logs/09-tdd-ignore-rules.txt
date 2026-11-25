@@ -687,7 +687,7 @@
 
 ❯ /export ../../ownyourcode-logs/07-tdd-url-parsing.txt                         
   ⎿  Conversation exported to:
-     /Users/eileenyuan/Desktop/NEU/ownyourcode-logs/07-tdd-url-parsing.txt
+     ~/Desktop/NEU/ownyourcode-logs/07-tdd-url-parsing.txt
 
 ❯ I found a bug: https://github.com//repo is accepted with an empty owner, and  
   https://github.com/owner/.git gives an empty repo name. Write failing tests   
@@ -785,7 +785,7 @@
     n...feat/repo-import-rules?expand=1
     - Title: feat: repo import URL parsing rules (PRD §5.1)
     - Paste the description I saved at
-      /private/tmp/claude-501/-Users-eileenyuan-Desktop-NEU-GitHub-ownyourcode/e
+      /private/tmp/claude-501/-Users-user-Desktop-NEU-GitHub-ownyourcode/e
       d62330c-fd01-4039-82fe-3cb3736945d7/scratchpad/pr-body.md. It covers the
       Vitest setup, the URL rules, the TDD commit history and the test results.
   - With the CLI: install it with ! brew install gh, then log in with ! gh auth 
@@ -796,7 +796,7 @@
 ※ recap: You're building the PRD §5.1 repo import rules with TDD, and URL parsing is finished with all 19 tests passing and pushed to feat/repo-import-rules. Next, open the pull request into main from the GitHub compare link, or install gh and I'll open it. (disable recaps in /config)
 
 ❯ /export ../../ownyourcode-logs/08-tdd-url-empty-segments.txt                  
-  ⎿  Conversation exported to: /Users/eileenyuan/Desktop/NEU/ownyourcode-logs/08
+  ⎿  Conversation exported to: ~/Desktop/NEU/ownyourcode-logs/08
      -tdd-url-empty-segments.txt
 
 ❯ /compact focus on the repo import rules, the TDD workflow we're following,    

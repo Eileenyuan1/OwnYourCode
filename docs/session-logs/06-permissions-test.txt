@@ -45,7 +45,7 @@
 
 ❯ /export ../../ownyourcode-logs/06-permissions-test.txt                        
   ⎿  Conversation exported to:
-     /Users/eileenyuan/Desktop/NEU/ownyourcode-logs/06-permissions-test.txt
+     ~/Desktop/NEU/ownyourcode-logs/06-permissions-test.txt
 
 ❯ can you try npm run lint again?                                               
 
