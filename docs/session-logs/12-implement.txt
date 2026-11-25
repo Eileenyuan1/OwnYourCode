@@ -1,0 +1,856 @@
+▗ ▗   ▖ ▖  Claude Code v2.1.331
+           Opus 5.5 · Claude Pro
+ ▘▘   ▝▝   ~/ownyourcode
+
+▎ [✻] [✻] [✻] · Share Claude Code and earn $10 in usage credits · /passes
+
+❯ Switch to main, pull the latest, and create a branch called                   
+  feat/repo-import-page.                                                        
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I pulled main, which was already up to date, and created the new branch
+  feat/repo-import-page from it. You're on that branch now, and the working tree
+  is clean.
+
+✻ Baked for 7s · done 17:07
+
+❯ I want to build the repo import feature from PRD F2: a page where I paste a   
+  GitHub URL, the app fetches the repo's file tree from the GitHub API, runs    
+  our §5.1 rules, and shows the kept files or an error.                         
+                                                                                
+  Before planning anything, explore what we already have: the rules in          
+  lib/rules, the app folder, and the Next.js 16 docs in node_modules about      
+  forms, server actions, and route handlers. Don't write any code. Tell me what 
+  we can reuse and what's missing.                                              
+
+  Searched for 1 pattern, read 5 files, ran 2 shell commands (ctrl+o to expand)
+
+⏺ I've read the rules, the app folder, and the Next.js docs on forms, Server
+  Actions and Route Handlers. No code was written.
+
+  What we can reuse
+
+  All three §5.1 rules are done and tested in lib/rules/repo-import.ts:
+
+  Function: parseGitHubUrl(url)
+  What it gives us: Returns { ok, owner, repo } or an error message. Covers
+    https only, the two allowed hosts, exactly two path segments, trailing
+    slash and .git stripping.
+  ────────────────────────────────────────
+  Function: shouldIgnorePath(path)
+  What it gives us: The ignored folders, lock files and extensions.
+  ────────────────────────────────────────
+  Function: filterRepoFiles(files)
+  What it gives us: Takes RepoFile[] ({ path, size }) and returns the kept
+    files in their original order, or an error. It applies the 100 KB limit,
+    the 200 file limit (with the count in the message) and the "no files left"
+    check.
+
+  So the page flow is just: parse the URL, fetch the tree, filter it, render the
+  result. Both functions already return an ok-or-error shape, so the page can
+  show either error the same way.
+
+  Testing is ready too. vitest.config.mts runs jsdom with React Testing Library
+  and resolves the @/ alias, so component tests can be added without new setup.
+
+  What the Next.js 16 docs say
+
+  - A Server Action fits better than a Route Handler. The forms guide's pattern
+    is a 'use server' action plus a client form using useActionState, which
+    gives us [state, formAction, pending]. state holds the error or the kept
+    files, and pending disables the button. One catch: the action's signature
+    becomes (prevState, formData).
+  - Route Handlers aren't needed. They're for endpoints that outside callers or
+    parallel non-mutation requests hit. Ours is one form posting to our own
+    server.
+  - Security: an action is a public POST endpoint. The docs say to validate
+    FormData as untrusted input, keep return values down to what the UI renders,
+    and check auth inside every action.
+  - cacheComponents: true is on in next.config.ts. That mainly affects
+    prerendering in pages and GET handlers. A fetch inside a Server Action runs
+    at request time, so it shouldn't matter here. I'll check it again if the
+    page ends up fetching during render.
+  - Files can't be named in kebab-case everywhere. Next requires page.tsx, and
+    the docs examples use default exports for pages. That conflicts with our
+    "named exports only" rule, so pages will need to be an exception.
+
+  What's missing
+
+  1. A GitHub client (for example lib/github/fetch-repo-tree.ts). It would make
+     two calls:
+     - GET /repos/{owner}/{repo}/git/trees/HEAD?recursive=1, keeping only
+       entries with type === "blob" and mapping them to { path, size }. Folder
+       entries have no size, and submodule entries (commit) should be dropped.
+     - The response's truncated: true flag. Very large repos come back with only
+       part of the tree, which would make the 200 file count wrong, so we
+       should reject those.
+  2. Errors from GitHub: a repo that doesn't exist or is private (404), the rate
+     limit (403/429, only 60 requests an hour without a token), and network
+     failures. These need friendly messages that the rules don't produce.
+  3. An optional GITHUB_TOKEN env var to raise the rate limit. Per the PRD,
+     secrets go in env vars only.
+  4. The Server Action (for example app/import/actions.ts): read url from
+     FormData, check that it's a string, then parse, fetch and filter.
+  5. The page and form: a route such as app/import/page.tsx with a client form
+     component, a pending state, an error area with aria-live, and the list of
+     kept files. app/page.tsx is still the create-next-app starter.
+  6. Tests: unit tests for the GitHub client with fetch mocked, and tests for
+     the action and form.
+  7. Things F2 asks for that we can't build yet:
+     - "Unauthenticated users can't access" needs Auth.js, which isn't
+       installed.
+     - "Re-importing the same repo reuses it" needs Prisma/Postgres, which
+       aren't there either. For now I'd leave a clear TODO where the auth check
+       goes, and treat reuse as out of scope for this branch.
+
+  Two things for you to decide before I plan:
+  - Branch: the default branch (using HEAD) or a pinned commit SHA? A SHA
+    matters later, when citations have to stay valid.
+  - Auth: should this page go ahead without auth for now, or wait until F1 is
+    done?
+
+✻ Cooked for 43s · done 17:09
+
+❯ Use the default branch (HEAD), not a pinned SHA. That can wait until          
+  citations need a fixed commit.                                                
+                                                                                
+  No auth and no database on this branch. Don't wait for F1. Just fetch,        
+  filter, and show. Leave a TODO where the auth check will go later.            
+
+⏺ Here's the plan with your two decisions in: the default branch via HEAD, and
+  no auth or database on this branch.
+
+  Plan: repo import page (F2, fetch, filter, show)
+
+  1. GitHub client: lib/github/fetch-repo-tree.ts (+ .test.ts)
+  - fetchRepoTree(owner, repo, options?) returns { ok: true, files: RepoFile[] }
+    | { ok: false, error }. The success shape matches the rules' types.
+  - It calls GET 
+    https://api.github.com/repos/{owner}/{repo}/git/trees/HEAD?recursive=1:
+    - owner and repo are passed through encodeURIComponent.
+    - Headers: Accept: application/vnd.github+json, a generic User-Agent: 
+      ownyourcode, and Authorization only if GITHUB_TOKEN is set.
+    - The request uses cache: 'no-store'.
+  - From the response it keeps only type === "blob" entries and maps them to { 
+    path, size } in GitHub's order. Folders and submodules are dropped.
+  - Errors get friendly messages:
+
+  | Case                | Message              |
+  |---------------------|----------------------|
+  | 404                 | not found or private |
+  | 403/429             | rate limited         |
+  | Other non-OK status | generic message      |
+  | fetch throws        | network message      |
+  | truncated: true     | repo too large       |
+
+  - Tests stub fetch and never touch the network.
+
+  2. Orchestrator: lib/services/import-repo.ts (+ .test.ts)
+  - importRepo(url, deps) runs parseGitHubUrl, then fetchRepoTree, then
+    filterRepoFiles. It stops at the first error.
+  - It's plain TypeScript with no Next imports, so it can be tested with a fake
+    fetcher. The action stays thin, as CLAUDE.md asks.
+
+  3. Server Action: app/import/actions.ts
+  - 'use server', with importRepoAction(prevState, formData).
+  - A // TODO(F1): require sign-in and rate limit goes at the top of the action.
+  - It checks that url is a non-empty string with a length cap, then calls
+    importRepo with process.env.GITHUB_TOKEN.
+  - It returns only what the UI renders: { status: 'idle' | 'error' | 'success',
+    error?, owner?, repo?, files? }.
+
+  4. UI: app/import/import-form.tsx (+ .test.tsx) and app/import/page.tsx
+  - The form is a client component using useActionState. It has a URL input with
+    required and a submit button that's disabled while the request is pending.
+  - Errors show in an aria-live area. On success it shows the file count and the
+    kept paths with sizes.
+  - page.tsx is a thin server component. Its default export is a Next
+    requirement and the only exception to our named exports rule.
+  - Form tests mock the action module.
+  - I'll leave app/page.tsx alone; the page lives at /import.
+
+  5. Order and checks
+  - Tests come before code for steps 1 and 2.
+  - Then npm test, npm run lint and npm run build.
+  - Then a manual run in npm run dev against a small public repo and an invalid
+    URL.
+  - No commits unless you ask.
+
+  Shall I go ahead?
+
+✻ Brewed for 20s · done 17:10
+
+❯ Don't write any implementation yet. Update the plan so the work is split into 
+  at least 3 commits:                                                           
+  1. tests and implementation for the GitHub client                             
+  2. tests and implementation for importRepo                                    
+  3. the server action and the /import page                                     
+                                                                                
+  Then save the plan to docs/plans/repo-import-page.md and commit it as "docs:  
+  add plan for repo import page".                                               
+
+⏺ Updated plan
+  ⎿  /plan to preview
+
+⏺ Approved Claude's plan
+  ⎿  Plan saved to: ~/.claude/plans/delegated-booping-torvalds-of-550eb71a-1896-
+     453f-a41a-0b25ed2d2d07.md · /plan to edit
+     Plan: save the repo import page plan and commit it
+
+     What happens when this plan is approved
+
+     1. Write the plan below (the "Document" section, verbatim) to
+        docs/plans/repo-import-page.md.
+     2. git add docs/plans/repo-import-page.md
+     3. Commit on feat/repo-import-page with message:
+     docs: add plan for repo import page
+
+     Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+     4. No implementation code is written in this step.
+
+     ---
+
+     Document (contents of docs/plans/repo-import-page.md)
+
+     # Plan: Repo Import Page (PRD F2)
+
+     ## Context
+
+     PRD F2 needs a page where a student pastes a public GitHub URL, the app
+     fetches the
+     repo's file tree, applies the §5.1 rules, and shows either the kept files
+     or an error.
+
+     The §5.1 rules already exist and are tested in `lib/rules/repo-import.ts`:
+
+     - `parseGitHubUrl(url)` returns `{ ok, owner, repo }` or `{ ok: false,
+     error }`
+     - `shouldIgnorePath(path)` covers ignored folders, lock files and
+     extensions
+     - `filterRepoFiles(files: RepoFile[])` applies the size limit, the 200 file
+     limit and
+       the "no files left" check, keeping the original order
+
+     What is missing is the GitHub fetch, the glue between the pieces, and the
+     UI.
+
+     ## Decisions
+
+     - Fetch the default branch via `HEAD`. Pinning a commit SHA waits until
+     citations
+       need a fixed commit.
+     - No auth and no database on this branch. The Server Action gets a
+       `TODO(F1)` comment where the sign in and rate limit checks will go.
+     - "Re-importing reuses the repo" (F2) is out of scope until Prisma exists.
+     - Use a Server Action with `useActionState`, not a Route Handler (Next.js
+     16
+       forms guide). The form posts only to our own server.
+     - `app/import/page.tsx` uses a default export because Next.js requires it;
+     this is
+       the only exception to the named exports rule.
+
+     ## Commits
+
+     ### 1. `feat: add GitHub repo tree client`
+
+     Files: `lib/github/fetch-repo-tree.ts`,
+     `lib/github/fetch-repo-tree.test.ts`
+
+     Tests are written first, then the implementation; both land in this commit.
+
+     - `fetchRepoTree(owner, repo, options?)` returns
+       `{ ok: true, files: RepoFile[] } | { ok: false, error: string }`, reusing
+     the
+       `RepoFile` type from `lib/rules/repo-import.ts`.
+     - Options: `token?: string` and an injectable `fetch` for tests.
+     - Request: `GET
+     https://api.github.com/repos/{owner}/{repo}/git/trees/HEAD?recursive=1`
+       - `owner` and `repo` go through `encodeURIComponent`
+       - headers: `Accept: application/vnd.github+json`,
+         `X-GitHub-Api-Version: 2022-11-28`, `User-Agent: ownyourcode`,
+         `Authorization: Bearer <token>` only when a token is given
+       - `cache: 'no-store'`
+     - Response handling:
+       - keep entries with `type === "blob"`, map to `{ path, size }`, keep
+     GitHub's order
+       - drop `tree` (folders) and `commit` (submodules) entries
+       - `truncated: true` → error: repo too large to import
+     - Error mapping, each with a friendly message:
+       - 404 → repo not found or private
+       - 403 / 429 → GitHub rate limit reached, try again later
+       - any other non OK status → generic GitHub error
+       - `fetch` throws → network error
+       - malformed JSON body → generic GitHub error
+     - Tests stub `fetch`; they never hit the network. Cases: success mapping,
+       blob only filtering, order kept, URL encoding, token header present or
+     absent,
+       each error case above.
+
+     ### 2. `feat: add importRepo service`
+
+     Files: `lib/services/import-repo.ts`, `lib/services/import-repo.test.ts`
+
+     Tests are written first, then the implementation; both land in this commit.
+
+     - `importRepo(url, deps)` where `deps.fetchRepoTree` is injected.
+     - Flow: `parseGitHubUrl` → `fetchRepoTree` → `filterRepoFiles`, stopping at
+     the
+       first error.
+     - Returns `{ ok: true, owner, repo, files } | { ok: false, error }`.
+     - Plain TypeScript, no Next.js imports.
+     - Tests use a fake `fetchRepoTree`. Cases: invalid URL never calls the
+     fetcher,
+       fetch error is passed through, filter error (0 files, over 200 files) is
+     passed
+       through, success returns owner, repo and the filtered files in order.
+
+     ### 3. `feat: add repo import page`
+
+     Files: `app/import/actions.ts`, `app/import/import-form.tsx`,
+     `app/import/import-form.test.tsx`, `app/import/page.tsx`
+
+     - `actions.ts` (`'use server'`):
+       `importRepoAction(prevState: ImportState, formData: FormData):
+     Promise<ImportState>`
+       - `// TODO(F1): require sign in and apply per user rate limit` at the top
+       - reads `url` from `FormData`; rejects non strings, empty values and
+     values over
+         a length cap (e.g. 500 chars)
+       - calls `importRepo(url, { fetchRepoTree })` with
+     `process.env.GITHUB_TOKEN`
+         (optional; secrets only in env vars)
+       - returns only what the UI renders:
+         `{ status: 'idle' | 'error' | 'success', error?, owner?, repo?, files?
+     }`
+     - `import-form.tsx` (`'use client'`):
+       - `useActionState(importRepoAction, { status: 'idle' })`
+       - URL input with `name="url"`, `type="url"`, `required`, label
+       - submit button disabled while `pending`
+       - error shown in an `aria-live="polite"` region
+       - on success: `owner/repo`, kept file count, and the list of paths with
+     sizes
+     - `import-form.test.tsx`: mocks `./actions`; checks the error message
+     renders,
+       the file list renders on success, and the button is disabled while
+     pending.
+     - `page.tsx`: thin server component with a heading and `<ImportForm />`.
+     - `app/page.tsx` is left unchanged.
+
+     ## Verification
+
+     After each commit:
+
+     - `npm test`
+     - `npm run lint`
+
+     After commit 3:
+
+     - `npm run build`
+     - `npm run dev`, open `/import`, and try:
+       - a small public repo → kept file list shows
+       - `http://github.com/a/b` → URL error
+       - a repo that does not exist → not found error
+       - a repo with more than 200 kept files → limit error with the count
+
+⏺ Write(docs/plans/repo-import-page.md)
+  ⎿  Wrote 115 lines to docs/plans/repo-import-page.md
+       1 # Plan: Repo Import Page (PRD F2)
+       2 
+       3 ## Context
+       4 
+       5 PRD F2 needs a page where a student pastes a public GitHub URL,
+         the app fetches the
+       6 repo's file tree, applies the §5.1 rules, and shows either the k
+         ept files or an error.
+       7 
+       8 The §5.1 rules already exist and are tested in `lib/rules/repo-i
+     … +108 lines (~5 KB) (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I saved the plan to docs/plans/repo-import-page.md and committed it to
+  feat/repo-import-page as e2292c2 docs: add plan for repo import page. Nothing
+  is pushed yet, and no implementation code was written.
+
+  The work is split into three commits, each with its tests and implementation
+  together:
+  1. feat: add GitHub repo tree client: lib/github/fetch-repo-tree.ts, which
+     fetches the default branch tree via HEAD and turns GitHub's error responses
+     into readable messages.
+  2. feat: add importRepo service: lib/services/import-repo.ts, which runs
+     parseGitHubUrl, then the fetch, then filterRepoFiles.
+  3. feat: add repo import page: the Server Action with a TODO(F1) where the
+     auth check goes, plus the /import page and form.
+
+  I'll run npm test and npm run lint after each commit, then do a build and a
+  manual check in the dev server at the end.
+
+  Each commit holds the tests and the code together, as you asked. CLAUDE.md's
+  separate red and green commits are only required for the §5 PRD rules, which
+  this work doesn't touch.
+
+✻ Brewed for 52s · done 17:15
+
+❯ /export ../ownyourcode-logs/11-explore-plan.txt                               
+  ⎿  Conversation exported to
+     /Users/zouxiaoman/ownyourcode-logs/11-explore-plan.txt
+
+❯ Implement the plan one commit at a time. Start with commit 1 only: the GitHub 
+  client and its tests. After that piece, run npm test and npm run lint, show   
+  me the diff, and wait for me before committing.                               
+
+⏺ I'll write the tests first, following the style of the existing test file.
+
+  Read 1 file (ctrl+o to expand)
+
+⏺ Write(lib/github/fetch-repo-tree.test.ts)
+  ⎿  Wrote 166 lines to lib/github/fetch-repo-tree.test.ts
+       1 // @vitest-environment node
+       2 import { describe, expect, it, vi } from 'vitest'
+       3 import { fetchRepoTree } from './fetch-repo-tree'
+       4 
+       5 function jsonResponse(body: unknown, status = 200): Response {
+       6   return new Response(JSON.stringify(body), {
+       7     status,
+       8     headers: { 'Content-Type': 'application/json' },
+       9   })
+      10 }
+     … +156 lines (ctrl+o to expand)
+
+⏺ Next, the implementation:
+
+⏺ Write(lib/github/fetch-repo-tree.ts)
+  ⎿  Wrote 83 lines to lib/github/fetch-repo-tree.ts
+       1 import type { RepoFile } from '@/lib/rules/repo-import'
+       2 
+       3 export type FetchRepoTreeResult =
+       4   | { ok: true; files: RepoFile[] }
+       5   | { ok: false; error: string }
+       6 
+       7 export type FetchRepoTreeOptions = {
+       8   token?: string
+       9   fetch?: typeof fetch
+      10 }
+     … +73 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ All checks pass on my new files; the one remaining tsc error in app/layout.tsx
+  predates this change, since LayoutProps only exists after a Next.js build or
+  dev run. · summary
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Commit 1, the GitHub client and its tests, is written and nothing is committed
+  yet. npm test passes all 78 tests, 21 of them new, and npm run lint is clean.
+
+  The implementation diff is above, in lib/github/fetch-repo-tree.ts. The test
+  file, lib/github/fetch-repo-tree.test.ts (166 lines), covers:
+
+  - Request:
+    - the HEAD?recursive=1 URL
+    - encodeURIComponent on the owner and repo
+    - the Accept, X-GitHub-Api-Version and User-Agent headers, plus cache: 
+      'no-store'
+    - Authorization: Bearer … sent only when a token is given
+  - Success: blobs become { path, size } in GitHub's order, folder and submodule
+    entries are dropped, and an empty tree returns an empty list.
+  - Errors:
+    - truncated: true gives "too large"
+    - 404 gives "not found or private"
+    - 403 and 429 give "rate limit"
+    - 409, 500 and 502 give a generic GitHub error
+    - fetch throwing gives a network error
+    - a body that isn't JSON gives the generic error
+    - a body with no tree, a tree that isn't an array, or a blob missing size or
+      path also gives the generic error
+
+  A few things you might want changed before committing:
+  - Malformed responses: if GitHub sends a blob without a path or size, the
+    whole import fails instead of quietly skipping that file. It's stricter, but
+    nothing goes missing without notice.
+  - 403: it's always reported as the rate limit, as the plan says. GitHub also
+    returns 403 for other refusals, so the message could be misleading in rare
+    cases.
+  - Test environment: the test file starts with // @vitest-environment node,
+    since this code runs on the server and should use Node's real fetch/Response
+    rather than jsdom's.
+  - Git index: to show the new files in the diff I ran git add -N lib/github.
+    That only marks them as tracked; nothing is staged or committed.
+
+  Shall I commit this as feat: add GitHub repo tree client?
+
+✻ Churned for 1m 1s · done 17:21
+
+❯ Looks good. Commit this piece as feat: add GitHub repo tree client.           
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I committed the GitHub client and its tests as d17de2a feat: add GitHub repo 
+  tree client on feat/repo-import-page. The working tree is clean and nothing is
+  pushed.
+
+  Next is commit 2, the importRepo service in lib/services/, which I'll start
+  when you say so.
+
+✻ Worked for 5s · done 17:22
+
+❯ Start commit 2 only: tests and implementation for importRepo in               
+  lib/services/. Run npm test and npm run lint, show me the diff, and wait for  
+  me before committing.                                                         
+
+⏺ Tests first:
+
+⏺ Write(lib/services/import-repo.test.ts)
+  ⎿  Rejected write to lib/services/import-repo.test.ts
+       1 // @vitest-environment node
+       2 import { describe, expect, it, vi } from 'vitest'
+       3 import type { FetchRepoTreeResult } from '@/lib/github/fetch-rep
+         o-tree'
+       4 import type { RepoFile } from '@/lib/rules/repo-import'
+       5 import { importRepo, type ImportRepoDeps } from './import-repo'
+       6 
+       7 function fakeDeps(result: FetchRepoTreeResult) {
+       8   const fetchRepoTree = vi.fn<ImportRepoDeps['fetchRepoTree']>()
+         .mockResolvedValue(result)
+       9   return { fetchRepoTree }
+      10 }
+     … +89 lines (ctrl+o to expand)
+
+  Did not run 1 call (ctrl+o to expand)
+  ⎿  $ npx vitest run lib/services 2>&1 | tail -12
+  ⎿  Interrupted · What should Claude do instead?
+
+❯ That was a mistake. Please create lib/services/import-repo.test.ts and        
+  continue commit 2. Still wait for me before committing.                       
+
+⏺ Write(lib/services/import-repo.test.ts)
+  ⎿  Wrote 99 lines to lib/services/import-repo.test.ts
+       1 // @vitest-environment node
+       2 import { describe, expect, it, vi } from 'vitest'
+       3 import type { FetchRepoTreeResult } from '@/lib/github/fetch-rep
+         o-tree'
+       4 import type { RepoFile } from '@/lib/rules/repo-import'
+       5 import { importRepo, type ImportRepoDeps } from './import-repo'
+       6 
+       7 function fakeDeps(result: FetchRepoTreeResult) {
+       8   const fetchRepoTree = vi.fn<ImportRepoDeps['fetchRepoTree']>()
+         .mockResolvedValue(result)
+     … +91 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Red as expected: the module doesn't exist yet. Now the implementation:
+
+⏺ Write(lib/services/import-repo.ts)
+  ⎿  Wrote 23 lines to lib/services/import-repo.ts
+       1 import type { FetchRepoTreeResult } from '@/lib/github/fetch-rep
+         o-tree'
+       2 import { filterRepoFiles, parseGitHubUrl, type RepoFile } from '
+         @/lib/rules/repo-import'
+       3 
+       4 export type ImportRepoDeps = {
+       5   fetchRepoTree: (owner: string, repo: string) => Promise<FetchR
+         epoTreeResult>
+       6 }
+       7 
+     … +16 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Commit 2, the importRepo service and its tests, is written and nothing is
+  committed yet. npm test passes all 85 tests, 7 of them new, and npm run lint
+  is clean. The new tests failed first because the module didn't exist, then
+  passed once I added it.
+
+  lib/services/import-repo.ts (diff above) checks the URL with parseGitHubUrl,
+  then calls the injected fetchRepoTree, then runs filterRepoFiles. It returns
+  the first error it meets, or { ok, owner, repo, files }. It has no Next.js
+  imports. The GitHub token isn't part of importRepo: in commit 3 the Server
+  Action will pass (o, r) => fetchRepoTree(o, r, { token }).
+
+  lib/services/import-repo.test.ts (99 lines) uses a fake fetcher and covers:
+  - Invalid URL: returns the URL error and never calls the fetcher.
+  - Fetching: calls the fetcher once with the parsed owner and repo, with .git
+    stripped, and passes a GitHub error through unchanged.
+  - Filtering:
+    - drops ignored folders, lock files, images and files over 102,400 bytes
+    - keeps a file of exactly 102,400 bytes
+    - keeps the original order
+    - rejects a repo with no files left
+    - rejects 201 files with both numbers in the message
+    - accepts exactly 200
+
+  As with commit 1, bare tsc still reports the existing LayoutProps error in
+  app/layout.tsx, and I ran git add -N lib/services only so the new files show
+  in the diff.
+
+  Shall I commit this as feat: add importRepo service?
+
+✻ Cooked for 26s · done 17:26
+
+❯ Looks good. Commit this piece as feat: add importRepo service.                
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I committed the importRepo service and its tests as 3c057e6 feat: add 
+  importRepo service on feat/repo-import-page. The working tree is clean and
+  nothing is pushed.
+
+  Next is commit 3: the Server Action and the /import page, which I'll start
+  when you say so.
+
+✻ Cooked for 5s · done 17:28
+
+❯ Start commit 3 only: the Server Action and the /import page, including their  
+  tests. Run npm test and npm run lint, show me the diff, and wait for me       
+  before committing.                                                            
+
+⏺ First I'll check the 'use server' file rules in the Next docs, since they
+  limit what the action file can export.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ A 'use server' file may only export async functions, so the state type and the
+  initial state go in their own small file, app/import/import-state.ts.
+
+⏺ Write(app/import/import-state.ts)
+  ⎿  Wrote 9 lines to app/import/import-state.ts
+      1 import type { RepoFile } from '@/lib/rules/repo-import'
+      2 
+      3 // Lives outside actions.ts because a 'use server' file may only 
+        export async functions.
+      4 export type ImportState =
+      5   | { status: 'idle' }
+      6   | { status: 'error'; error: string }
+      7   | { status: 'success'; owner: string; repo: string; files: Repo
+        File[] }
+      8 
+     … +1 line (ctrl+o to expand)
+
+⏺ Write(app/import/actions.test.ts)
+  ⎿  Wrote 107 lines to app/import/actions.test.ts
+      1 // @vitest-environment node
+      2 import { afterEach, beforeEach, describe, expect, it, vi } from '
+        vitest'
+      3 import { fetchRepoTree } from '@/lib/github/fetch-repo-tree'
+      4 import { importRepoAction } from './actions'
+      5 import { initialImportState } from './import-state'
+      6 
+      7 vi.mock('@/lib/github/fetch-repo-tree', () => ({ fetchRepoTree: v
+        i.fn() }))
+      8 
+     … +99 lines (ctrl+o to expand)
+
+⏺ Write(app/import/import-form.test.tsx)
+  ⎿  Wrote 101 lines to app/import/import-form.test.tsx
+       1 import { act, cleanup, fireEvent, render, screen } from '@testin
+         g-library/react'
+       2 import { afterEach, beforeEach, describe, expect, it, vi } from
+         'vitest'
+       3 import { importRepoAction } from './actions'
+       4 import { ImportForm } from './import-form'
+       5 
+       6 vi.mock('./actions', () => ({ importRepoAction: vi.fn() }))
+       7 
+       8 const actionMock = vi.mocked(importRepoAction)
+     … +93 lines (ctrl+o to expand)
+
+⏺ Now the implementation files:
+
+⏺ Write(app/import/actions.ts)
+  ⎿  Wrote 36 lines to app/import/actions.ts
+       1 'use server'
+       2 
+       3 import { fetchRepoTree } from '@/lib/github/fetch-repo-tree'
+       4 import { importRepo } from '@/lib/services/import-repo'
+       5 import type { ImportState } from './import-state'
+       6 
+       7 const MAX_URL_LENGTH = 500
+       8 
+       9 export async function importRepoAction(
+      10   _prevState: ImportState,
+     … +26 lines (ctrl+o to expand)
+
+⏺ Write(app/import/import-form.tsx)
+  ⎿  Wrote 65 lines to app/import/import-form.tsx
+      1 'use client'
+      2 
+      3 import { useActionState } from 'react'
+      4 import { importRepoAction } from './actions'
+      5 import { initialImportState } from './import-state'
+      6 
+      7 function formatSize(bytes: number): string {
+      8   return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(
+        1)} KB`
+      9 }
+     … +56 lines (ctrl+o to expand)
+
+⏺ Write(app/import/page.tsx)
+  ⎿  Wrote 22 lines to app/import/page.tsx
+       1 import type { Metadata } from 'next'
+       2 import { ImportForm } from './import-form'
+       3 
+       4 export const metadata: Metadata = {
+       5   title: 'Import a repo · OwnYourCode',
+       6 }
+       7 
+       8 // Next.js requires a default export for pages; the only excepti
+         on to the named exports rule.
+       9 export default function ImportPage() {
+     … +13 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+⏺ Tests and lint pass. The plan also calls for npm run build after commit 3, so
+  I'll run that too:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The build passes, and /import is prerendered as a static page. The warning
+  about a package-lock.json in your home folder has nothing to do with this
+  branch.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Commit 3, the Server Action and the /import page with their tests, is written
+  and nothing is committed yet. npm test passes all 101 tests, 16 of them new,
+  and npm run lint and npm run build are both clean. Unlike commits 1 and 2, I
+  wrote the tests and the implementation in one pass here, so the new tests were
+  never run against missing code first.
+
+  Files (6 new, 340 lines):
+  - app/import/actions.ts: the Server Action, with the TODO(F1) at the top. It
+    returns an error for a missing, empty, non-text or over 500 character url
+    and doesn't call GitHub in those cases. Otherwise it trims the URL, passes
+    GITHUB_TOKEN if it's set, and returns only owner, repo and { path, size }.
+  - app/import/import-state.ts: a small file I added that wasn't in the plan. It
+    holds the ImportState type and the initial state, because a 'use server'
+    file may only export async functions. ImportState is either idle, error with
+    a message, or success with the repo and files.
+  - app/import/import-form.tsx: the client form using useActionState. It has a
+    labelled, required type="url" input, and the button reads "Importing…" and
+    is disabled while the request runs. Errors and results appear in an
+    aria-live="polite" area. On success it shows owner/repo, "N files kept" and
+    the list of paths with sizes in B or KB.
+  - app/import/page.tsx: a heading, one line of explanation and <ImportForm />.
+    It uses a default export, with a comment saying why.
+
+  Tests:
+  - actions.test.ts (mocks the GitHub client):
+    - bad input never reaches GitHub
+    - a URL over 500 characters gives "too long"
+    - the §5.1 URL error comes through
+    - success returns the filtered files, with ignored files dropped and the URL
+      trimmed
+    - a GitHub error comes through
+    - the token is passed when GITHUB_TOKEN is set, and left out when it's empty
+  - import-form.test.tsx (mocks the action):
+    - the input and button render
+    - the pasted URL reaches the action
+    - an error appears in the live region
+    - success shows the repo name, the file count (with "1 file" for a single
+      file) and the list
+    - the button is disabled while pending
+
+  I haven't done the hands-on npm run dev check from the plan yet, because it
+  calls the real GitHub API. I can start the dev server so you can try /import
+  before or after committing.
+
+  Shall I commit this as feat: add repo import page?
+
+✻ Crunched for 59s · done 17:32
+
+❯ Looks good. Commit this piece as feat: add repo import page.                  
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I committed the page, the Server Action and their tests as 42f7b6e feat: add 
+  repo import page. All three planned commits are now on feat/repo-import-page
+  after the plan commit, the working tree is clean, and nothing is pushed.
+
+  The hands-on check in npm run dev from the plan's verification step hasn't
+  been done yet. It calls the real GitHub API, and you would try:
+  - a small public repo
+  - http://github.com/a/b, which should show the URL error
+  - a repo that doesn't exist
+  - a repo with more than 200 kept files
+
+  I can start the dev server so you can try these at /import, or push the branch
+  and open a PR if you'd like.
+
+✻ Crunched for 6s · done 17:33
+
+❯ Start the dev server and tell me the local URL for the /import page. Don't    
+  push.                                                                         
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+⏺ The dev server is running in the background. Open http://localhost:3000/import
+  to try the page.
+
+  - Untracked change in AGENTS.md: next dev added a Next.js "agent feedback"
+    block to it, because experimental.agentFeedback: true is set in
+    next.config.ts. That shows up as an uncommitted change. I left it alone, and
+    you can commit it, revert it, or set the flag to false. I didn't run the
+    feedback step the block describes, since this work didn't hit any Next.js
+    problems worth reporting.
+  - Rate limit: without GITHUB_TOKEN set, GitHub allows 60 requests an hour. If
+    you hit the limit, the page will show the rate limit message.
+
+  Nothing was pushed. Tell me when you're done and I'll stop the server.
+
+✻ Cooked for 11s · done 17:34
+
+※ recap: The repo import page from PRD F2 is built and committed in three commits on feat/repo-import-page, not pushed. Next, open http://localhost:3000/import on the running dev server and try a few URLs. (turn off recaps in /config)
+
+❯ Stop the dev server. Do not commit AGENTS.md. If it changed, restore it. Then 
+  push the branch feat/repo-import-page.                                        
+
+⏺ Stop Task
+  ⎿  npm run dev · stopped
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ Something is still listening on port 3000. I'll check what it is before
+  stopping it:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ That process is Cursor's network helper, not the dev server: lsof -ti also
+  lists programs connected to the port, not just the one serving it. I'll check
+  for a real listener:
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The dev server is fully stopped. Now I'll restore AGENTS.md and push:
+
+  Pushed to feat/repo-import-page, ran 1 shell command (ctrl+o to expand)
+
+⏺ I stopped the dev server, restored AGENTS.md without committing it, and pushed
+  feat/repo-import-page.
+
+  - Dev server: stopped, and nothing is listening on port 3000 any more. Cursor
+    still had a connection open to that port, which is why it looked busy at
+    first.
+  - AGENTS.md: the block next dev had added was removed with git restore, and
+    the working tree is clean. next dev will add the block back each time it
+    runs unless experimental.agentFeedback is turned off in next.config.ts.
+  - Push: the branch is on origin and tracking it, with these 4 commits on top
+    of main:
+  42f7b6e feat: add repo import page
+  3c057e6 feat: add importRepo service
+  d17de2a feat: add GitHub repo tree client
+  e2292c2 docs: add plan for repo import page
+
+  GitHub says the repo has moved to
+  https://github.com/Eileenyuan1/OwnYourCode.git. The push still went through
+  because GitHub redirects, but you may want to update the remote with git 
+  remote set-url origin https://github.com/Eileenyuan1/OwnYourCode.git.
+
+  You can open a PR at
+  https://github.com/Eileenyuan1/OwnYourCode/pull/new/feat/repo-import-page, or
+  I can create it for you.
+
+✻ Cooked for 26s · done 17:39
+
+※ recap: The repo import page for F2 is built, committed in four pieces and pushed on feat/repo-import-page, with the dev server stopped and AGENTS.md restored. Next, you can open the pull request yourself or ask me to create it. (turn off recaps in /config)
