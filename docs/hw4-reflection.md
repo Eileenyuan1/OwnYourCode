@@ -1,6 +1,6 @@
 # HW4 Reflection
 
-This is a joint reflection written by both team members. It covers the Claude Code setup, the test driven repo import rules, and the repo import page we built with Explore, Plan, Implement, Commit.
+This is a joint reflection written by both team members. It covers the Claude Code setup, the test driven repo import rules, and the repo import page we built with Explore, Plan, Implement, Commit. The annotated Claude Code session log is in [session-log.md](session-log.md).
 
 ## How this workflow compares with how we used to work
 
