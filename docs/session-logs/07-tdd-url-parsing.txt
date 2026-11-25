@@ -1,0 +1,686 @@
+ ▐▛███▛█   Claude Code v2.1.325
+▝▜██████▀  Opus 5.5 · Claude Enterprise
+ ▝▝   ▝▝   ~/Desktop/NEU/GitHub/ownyourcode
+
+
+❯ I'm starting the TDD part. First create a branch called                       
+  feat/repo-import-rules. Then set up Vitest. Check the Next.js docs in         
+  node_modules/next/dist/docs for the recommended setup, and add a test script  
+  to package.json. It's fine if there are no tests yet, just make sure npm test 
+  runs.                                                                         
+
+  Read 1 file, ran 4 shell commands (ctrl+o to expand)
+
+⏺ Vitest 5 needs @types/node 22 or newer, and this project pins ^20. You're on
+  Node 22, so I'll bump @types/node to ^22 to match. That's cleaner than forcing
+  it with --legacy-peer-deps.
+
+⏺ Bash(npm install -D @types/node@^22 vitest @vitejs/plugin-react jsdom
+      @testing-library/react @testing-library/dom vite-tsconfig-paths 2>&1 |
+      tail -5 && git diff pack…)
+  ⎿  164 packages are looking for funding
+       run `npm fund` for details
+     … +26 lines (ctrl+o to expand)
+  ⎿  Updated package.json (+8 -2)
+      15    },
+      16    "devDependencies": {
+      17      "@tailwindcss/turbopack": "4.3.3",
+      18 -    "@types/node": "^20",                                      
+      18 +    "@testing-library/dom": "^10.4.2",                         
+      19 +    "@testing-library/react": "^16.3.3",                       
+      20 +    "@types/node": "^22.20.5",                                 
+      21      "@types/react": "^19",
+      22      "@types/react-dom": "^19",
+      23 +    "@vitejs/plugin-react": "^6.3.0",                          
+      24      "eslint": "^9",
+      25      "eslint-config-next": "16.4.6",
+      26 +    "jsdom": "^29.1.1",                                        
+      27      "tailwindcss": "4.3.3",
+      24 -    "typescript": "^5"                                         
+      28 +    "typescript": "^5",                                        
+      29 +    "vite-tsconfig-paths": "^6.1.1",                           
+      30 +    "vitest": "^5.1.1"                                         
+      31    }
+      32  }
+  ⎿  … 1 more file changed
+
+⏺ Bash(cat > vitest.config.mts <<'EOF'
+      import { defineConfig } from 'vitest/config'…)
+  ⎿  > ownyourcode@0.1.0 test
+     > vitest run
+     … +16 lines (ctrl+o to expand)
+  ⎿  Updated package.json (+3 -1)
+       6      "dev": "next dev",
+       7      "build": "next build",
+       8      "start": "next start",
+       9 -    "lint": "eslint"                                           
+       9 +    "lint": "eslint",                                          
+      10 +    "test": "vitest run",                                      
+      11 +    "test:watch": "vitest"                                     
+      12    },
+      13    "dependencies": {
+      14      "next": "16.4.6",
+  ⎿  Created vitest.config.mts (+12 -0)
+       1 +import { defineConfig } from 'vitest/config'                   
+       2 +import react from '@vitejs/plugin-react'                       
+       3 +import tsconfigPaths from 'vite-tsconfig-paths'                
+       4 +                                                               
+       5 +// Vitest requires a default export for its config file.       
+       6 +export default defineConfig({                                  
+       7 +  plugins: [tsconfigPaths(), react()],                         
+       8 +  test: {                                                      
+       9 +    environment: 'jsdom',                                      
+      10 +    passWithNoTests: true,                                     
+      11 +  },                                                           
+      12 +})                                                             
+
+⏺ Vite says the vite-tsconfig-paths plugin from the Next.js guide is no longer
+  needed, so I'm switching to its built-in option per the deprecation notice. 
+  · summary
+
+⏺ Bash(npm uninstall vite-tsconfig-paths 2>&1 | tail -1 && cat >
+      vitest.config.mts <<'EOF'
+      import { defineConfig } from 'vitest/config'…)
+  ⎿  found 0 vulnerabilities
+
+     > ownyourcode@0.1.0 test
+     … +18 lines (ctrl+o to expand)
+  ⎿  Updated package-lock.json (+0 -45)
+      25          "jsdom": "^29.1.1",
+      26          "tailwindcss": "4.3.3",
+      27          "typescript": "^5",
+      28 -        "vite-tsconfig-paths": "^6.1.1",                       
+      28          "vitest": "^5.1.1"
+      29        }
+      30      },
+     ...
+      4791          "url": "https://github.com/sponsors/ljharb"
+      4792        }
+      4793      },
+      4795 -    "node_modules/globrex": {                                
+      4796 -      "version": "0.1.2",                                    
+      4797 -      "resolved": "https://registry.npmjs.org/globrex/-/globr
+           -ex-0.1.2.tgz",                                               
+      4798 -      "integrity": "sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJ
+           -b/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==",     
+      4799 -      "dev": true,                                           
+      4800 -      "license": "MIT"                                       
+      4801 -    },                                                       
+      4794      "node_modules/gopd": {
+      4795        "version": "1.2.0",
+      4796        "resolved": "https://registry.npmjs.org/gopd/-/gopd-1.2
+            .0.tgz",
+     ...
+      7464          "typescript": ">=4.8.4"
+      7465        }
+      7466      },
+      7475 -    "node_modules/tsconfck": {                               
+      7476 -      "version": "3.1.6",                                    
+      7477 -      "resolved": "https://registry.npmjs.org/tsconfck/-/tsco
+           -nfck-3.1.6.tgz",                                             
+      7478 -      "integrity": "sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KR
+           -Db1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==",     
+      7479 -      "deprecated": "unmaintained",                          
+      7480 -      "dev": true,                                           
+      7481 -      "license": "MIT",                                      
+      7482 -      "bin": {                                               
+      7483 -        "tsconfck": "bin/tsconfck.js"                        
+      7484 -      },                                                     
+      7485 -      "engines": {                                           
+      7486 -        "node": "^18 || >=20"                                
+      7487 -      },                                                     
+      7488 -      "peerDependencies": {                                  
+      7489 -        "typescript": "^5.0.0"                               
+      7490 -      },                                                     
+      7491 -      "peerDependenciesMeta": {                              
+     … 29 more lines (ctrl+o to expand)
+  ⎿  Updated package.json (+0 -1)
+      28      "jsdom": "^29.1.1",
+      29      "tailwindcss": "4.3.3",
+      30      "typescript": "^5",
+      31 -    "vite-tsconfig-paths": "^6.1.1",                           
+      31      "vitest": "^5.1.1"
+      32    }
+      33  }
+  ⎿  Updated vitest.config.mts (+5 -2)
+       1  import { defineConfig } from 'vitest/config'
+       2  import react from '@vitejs/plugin-react'
+       3 -import tsconfigPaths from 'vite-tsconfig-paths'                
+       3  
+       4  // Vitest requires a default export for its config file.
+       5  export default defineConfig({
+       7 -  plugins: [tsconfigPaths(), react()],                         
+       6 +  plugins: [react()],                                          
+       7 +  resolve: {                                                   
+       8 +    // Resolve the "@/*" alias from tsconfig.json natively.    
+       9 +    tsconfigPaths: true,                                       
+      10 +  },                                                           
+      11    test: {
+      12      environment: 'jsdom',
+      13      passWithNoTests: true,
+  ⎿  (timeout 3m)
+
+⏺ Vitest is set up on the new feat/repo-import-rules branch, and npm test runs
+  and exits with code 0 even though there are no tests yet. Lint and tsc 
+  --noEmit also pass. Nothing is committed.
+
+  What changed
+  - Dependencies: I installed the packages the Next.js App Router guide
+    (node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md) lists:
+    vitest, @vitejs/plugin-react, jsdom, @testing-library/react and
+    @testing-library/dom.
+  - vitest.config.mts: this follows the guide's config, plus passWithNoTests: 
+    true so an empty test suite doesn't fail.
+  - Scripts in package.json:
+    - "test": "vitest run" runs once and exits. The guide uses plain vitest,
+      which keeps watching for changes.
+    - "test:watch": "vitest" gives you watch mode during TDD.
+
+  Two changes from the guide you should know about
+  1. @types/node went from ^20 to ^22. Vitest 5 won't install with @types/node
+     20, and you're running Node 22.18, so 22 matches your setup.
+  2. I dropped vite-tsconfig-paths. The guide recommends it, but Vite printed a
+     notice that it now handles tsconfig paths itself, so I used its built-in
+     resolve.tsconfigPaths: true option instead. The @/* alias should still work
+     in tests. I haven't checked that with an actual test yet; your first test
+     that imports @/lib/... will show it.
+
+  The config file has to use export default because Vitest requires it. That's
+  an exception to the project's "named exports only" rule, and there's a comment
+  in the file explaining why.
+
+  Changed files: package.json, package-lock.json and the new vitest.config.mts.
+  To commit when you're ready, tell me something like "commit the Vitest setup
+  as chore: set up Vitest".
+
+  Say "move on" when you want to start the first red test for the §5.1 repo
+  import rules.
+
+✻ Cogitated for 53s · done 2:48 PM
+
+❯ before move on first commit this                                              
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I committed the Vitest setup as cd1bfa0 chore: set up Vitest on
+  feat/repo-import-rules. The working tree is clean, and I didn't push.
+
+  Say "move on" when you're ready for the first red test for the §5.1 repo
+  import rules.
+
+✻ Cogitated for 4s · done 2:51 PM
+
+❯ yes we can move on. Now the first rule from PRD §5.1: parsing the GitHub URL. 
+  Write tests only, no implementation, in lib/rules/repo-import.test.ts for a   
+  parseGitHubUrl function. It should return the owner and repo for              
+  https://github.com/owner/repo, and reject other hosts, a missing repo name,   
+  and extra path segments. Run the tests and show me they fail                  
+
+⏺ Write(lib/rules/repo-import.test.ts)
+  ⎿  Wrote 49 lines to lib/rules/repo-import.test.ts
+       1 import { describe, expect, it } from 'vitest'
+       2 import { parseGitHubUrl } from './repo-import'
+       3 
+       4 describe('parseGitHubUrl', () => {
+       5   it('returns the owner and repo for https://github.com/{owner}/
+         {repo}', () => {
+       6     expect(parseGitHubUrl('https://github.com/vercel/next.js')).
+         toEqual({
+       7       ok: true,
+       8       owner: 'vercel',
+     … +41 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I wrote the tests in lib/rules/repo-import.test.ts with no implementation, and
+  the run fails as expected:
+
+  FAIL  lib/rules/repo-import.test.ts
+  Error: Failed to resolve import "./repo-import" from 
+  "lib/rules/repo-import.test.ts". Does the file exist?
+
+  Test Files  1 failed (1)
+       Tests  no tests
+
+  It fails because lib/rules/repo-import.ts doesn't exist yet, so Vitest stops
+  at the import and no individual test runs.
+
+  What the tests expect from parseGitHubUrl
+
+  It returns an object instead of throwing. F2 says invalid URLs should show an
+  error, so a rejection includes a message:
+  - Success: { ok: true, owner, repo }
+  - Failure: { ok: false, error: string }
+
+  ┌───────────┬──────────────────────────────────────┬─────────────────────┐
+  │   Case    │             URLs tested              │      Expected       │
+  ├───────────┼──────────────────────────────────────┼─────────────────────┤
+  │           │                                      │ { ok: true, owner:  │
+  │ Valid     │ https://github.com/vercel/next.js    │ 'vercel', repo:     │
+  │           │                                      │ 'next.js' }         │
+  ├───────────┼──────────────────────────────────────┼─────────────────────┤
+  │ Other     │ gitlab.com, bitbucket.org,           │ ok: false           │
+  │ hosts     │ github.com.evil.com                  │                     │
+  ├───────────┼──────────────────────────────────────┼─────────────────────┤
+  │ Missing   │ /owner and /owner/                   │ ok: false           │
+  │ repo      │                                      │                     │
+  ├───────────┼──────────────────────────────────────┼─────────────────────┤
+  │ Extra     │ /owner/repo/tree/main and            │ ok: false           │
+  │ segments  │ /owner/repo/extra                    │                     │
+  ├───────────┼──────────────────────────────────────┼─────────────────────┤
+  │ Error     │ any rejected URL                     │ error is a          │
+  │ message   │                                      │ non-empty string    │
+  └───────────┴──────────────────────────────────────┴─────────────────────┘
+
+  The tests only check ok and that error exists, not the exact wording, so you
+  can change the messages later without breaking them.
+
+  Not covered yet: I left out cases the PRD doesn't decide. Tell me if you want
+  any added before the green step:
+  - https://github.com/owner/repo/ with a trailing slash
+  - a .git suffix
+  - http:// instead of https://
+  - www.github.com
+  - strings that aren't URLs
+
+  When you're happy with it, you could commit this as the red step with
+  something like test: add failing tests for parseGitHubUrl, then say "move on"
+  for the green step.
+
+✻ Churned for 19s · done 2:53 PM
+
+❯ /copy                                                                         
+  ⎿  Copied to clipboard (2133 characters, 36 lines)
+     Also written to /tmp/claude-501/response.md
+
+❯ Good tests. Two changes before I commit.                                      
+                                                                                
+  First, add these cases: accept a trailing slash, accept a .git suffix but     
+  strip it from the repo name, accept www.github.com, reject http://, and       
+  reject strings that aren't URLs.                                              
+                                                                                
+  Second, the red step should show real assertion failures, not a missing file. 
+  Add a stub parseGitHubUrl in lib/rules/repo-import.ts that just returns {     
+  ok: false, error: "not implemented" }, then run the tests again and show me   
+  which ones fail.                                                              
+                                                                                
+  Also update PRD §5.1 so it lists these URL rules.                             
+
+⏺ Write(lib/rules/repo-import.ts)
+  ⎿  Wrote 8 lines to lib/rules/repo-import.ts
+      1 export type ParseGitHubUrlResult =
+      2   | { ok: true; owner: string; repo: string }
+      3   | { ok: false; error: string }
+      4 
+      5 export function parseGitHubUrl(url: string): ParseGitHubUrlResult
+         {
+      6   void url
+      7   return { ok: false, error: 'not implemented' }
+      8 }
+
+⏺ Update(lib/rules/repo-import.test.ts)
+  ⎿  Added 37 lines
+      10      })
+      11    })
+      12  
+      13 +  it('accepts a trailing slash', () => {                       
+      14 +    expect(parseGitHubUrl('https://github.com/owner/repo/')).to
+         +Equal({                                                        
+      15 +      ok: true,                                                
+      16 +      owner: 'owner',                                          
+      17 +      repo: 'repo',                                            
+      18 +    })                                                         
+      19 +  })                                                           
+      20 +                                                               
+      21 +  it('accepts a .git suffix and strips it from the repo name', 
+         +() => {                                                        
+      22 +    expect(parseGitHubUrl('https://github.com/owner/repo.git'))
+         +.toEqual({                                                     
+      23 +      ok: true,                                                
+      24 +      owner: 'owner',                                          
+      25 +      repo: 'repo',                                            
+      26 +    })                                                         
+      27 +  })                                                           
+      28 +                                                               
+      29 +  it('accepts www.github.com', () => {                         
+      30 +    expect(parseGitHubUrl('https://www.github.com/owner/repo'))
+         +.toEqual({                                                     
+      31 +      ok: true,                                                
+      32 +      owner: 'owner',                                          
+      33 +      repo: 'repo',                                            
+      34 +    })                                                         
+      35 +  })                                                           
+      36 +                                                               
+      37 +  it('rejects http://', () => {                                
+      38 +    expect(parseGitHubUrl('http://github.com/owner/repo').ok).t
+         +oBe(false)                                                     
+      39 +  })                                                           
+      40 +                                                               
+      41 +  describe('rejects strings that are not URLs', () => {        
+      42 +    it.each(['', 'not a url', 'github.com/owner/repo', 'owner/r
+         +epo'])(                                                        
+      43 +      '%j',                                                    
+      44 +      (input) => {                                             
+      45 +        expect(parseGitHubUrl(input).ok).toBe(false)           
+      46 +      },                                                       
+      47 +    )                                                          
+      48 +  })                                                           
+      49 +                                                               
+      50    describe('rejects hosts other than github.com', () => {
+      51      it.each([
+      52        'https://gitlab.com/owner/repo',
+
+⏺ Update(docs/PRD.md)
+  ⎿  Added 5 lines, removed 1 line
+      57  ## 5. Business Rules (TDD targets)
+      58  
+      59  ### 5.1 Repo import
+      60 -- Host must be `github.com`; the path must be `/{owner}/{repo}`
+         -.                                                              
+      60 +- URL must be `https://github.com/{owner}/{repo}`:             
+      61 +  - Scheme must be `https`; `http://` and strings that aren't U
+         +RLs are rejected.                                              
+      62 +  - Host must be `github.com` or `www.github.com`; any other ho
+         +st is rejected.                                                
+      63 +  - Path must be exactly `/{owner}/{repo}`; a missing repo or e
+         +xtra segments are rejected.                                    
+      64 +  - A trailing slash is allowed, and a `.git` suffix is strippe
+         +d from the repo name.                                          
+      65  - Ignore: `node_modules/`, `.git/`, `dist/`, `build/`, `.next/`
+          , lock files, images, videos, fonts, binaries.
+      66  - Files larger than 100 KB are skipped.
+      67  - More than 200 files after filtering → reject with an explanat
+          ion.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+⏺ I added the five new cases, the stub, and the PRD rules. The red run now fails
+  on real assertions instead of a missing file: 4 failed, 13 passed (17).
+  Typecheck and lint pass.
+
+  The 4 failing tests
+
+  × returns the owner and repo for https://github.com/{owner}/{repo}
+  × accepts a trailing slash
+  × accepts a .git suffix and strips it from the repo name
+  × accepts www.github.com
+
+  Each one fails the same way. The .git case, for example:
+
+  - Expected
+  + Received
+    {
+  -   "ok": true,
+  -   "owner": "owner",
+  -   "repo": "repo",
+  +   "error": "not implemented",
+  +   "ok": false,
+    }
+
+  Why 13 pass: the stub rejects every input, so all the rejection tests pass
+  without proving anything yet. That covers other hosts, missing repo, extra
+  segments, http://, non-URLs and the error message check. The green step should
+  still turn the 4 accept tests green without breaking these 13. If you'd
+  rather see the rejection tests fail too, I can briefly change the stub to { 
+  ok: true, owner: '', repo: '' }, but the current stub is what you asked for.
+
+  What changed
+  - lib/rules/repo-import.ts: the stub, plus a ParseGitHubUrlResult type: { ok: 
+    true; owner; repo } | { ok: false; error }.
+  - lib/rules/repo-import.test.ts: new tests for:
+    - a trailing slash
+    - a .git suffix stripped from the repo name
+    - www.github.com
+    - rejecting http://
+    - rejecting four non-URLs: '', 'not a url', 'github.com/owner/repo',
+      'owner/repo'
+  - docs/PRD.md §5.1: the old host/path line is now four rules:
+    - the scheme must be https
+    - the host must be github.com or www.github.com
+    - the path must be exactly /{owner}/{repo}
+    - a trailing slash is allowed, and a .git suffix is stripped
+
+  Nothing is committed. You might split this into two commits: docs: specify 
+  GitHub URL rules in PRD §5.1, then test: add failing tests for parseGitHubUrl
+  for the test file and stub. Then say "move on" for the green step.
+
+✻ Churned for 26s · done 2:56 PM
+
+❯ commit the prd update and seperate the tests and stub                         
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ I made three commits on feat/repo-import-rules. The working tree is clean, and
+  I didn't push.
+
+  3ffb7fb test: add failing tests for parseGitHubUrl
+  b195350 chore: add parseGitHubUrl stub
+  5be6830 docs: specify GitHub URL rules in PRD §5.1
+
+  I put the stub before the tests. That way the test commit is a clean red step:
+  checking it out gives the 4 assertion failures instead of a missing module
+  error.
+
+  Say "move on" when you're ready for the green step: implementing
+  parseGitHubUrl so all 17 tests pass.
+
+✻ Worked for 10s · done 2:57 PM
+❯ commit first and then write the minimumin codein lib/rules/repo-import.ts to  
+  make all the tests pass. Don't add anything the tests don't need. Run the     
+  tests.                                                                        
+
+⏺ There was nothing left to commit: the last three commits already include all
+  the changes and the working tree is clean. Now for the implementation.
+
+⏺ Write(lib/rules/repo-import.ts)
+  ⎿  Added 22 lines, removed 2 lines
+       2    | { ok: true; owner: string; repo: string }
+       3    | { ok: false; error: string }
+       4  
+       5 +const INVALID: ParseGitHubUrlResult = {                        
+       6 +  ok: false,                                                   
+       7 +  error: 'Expected a URL like https://github.com/{owner}/{repo}
+         +',                                                             
+       8 +}                                                              
+       9 +                                                               
+      10  export function parseGitHubUrl(url: string): ParseGitHubUrlResu
+          lt {
+       6 -  void url                                                     
+       7 -  return { ok: false, error: 'not implemented' }               
+      11 +  let parsed: URL                                              
+      12 +  try {                                                        
+      13 +    parsed = new URL(url)                                      
+      14 +  } catch {                                                    
+      15 +    return INVALID                                             
+      16 +  }                                                            
+      17 +                                                               
+      18 +  if (parsed.protocol !== 'https:') return INVALID             
+      19 +  if (parsed.hostname !== 'github.com' && parsed.hostname !== '
+         +www.github.com') {                                             
+      20 +    return INVALID                                             
+      21 +  }                                                            
+      22 +                                                               
+      23 +  const segments = parsed.pathname.replace(/\/$/, '').split('/'
+         +).slice(1)                                                     
+      24 +  if (segments.length !== 2) return INVALID                    
+      25 +                                                               
+      26 +  const [owner, repo] = segments                               
+      27 +  return { ok: true, owner, repo: repo.replace(/\.git$/, '') } 
+      28  }
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ All 17 tests now pass, and typecheck and lint are clean. There was nothing to
+  commit first: the working tree was already clean after the last three commits.
+
+  How parseGitHubUrl works now
+  1. It tries new URL(url) and rejects the input if that throws. That covers the
+     non-URL strings.
+  2. It rejects anything that isn't https:.
+  3. It rejects any host except github.com and www.github.com.
+  4. It removes one trailing slash, splits the path, and requires exactly 2
+     segments.
+  5. It removes a .git suffix from the repo name.
+
+  Every rejection returns the same message, Expected a URL like 
+  https://github.com/{owner}/{repo}. The tests only need a non-empty message, so
+  I didn't add a separate message for each case.
+
+  Inputs this accepts that it probably shouldn't (no test covers them, so I left
+  them out on purpose):
+  - https://github.com/owner// passes with an empty repo name.
+  - https://github.com//repo passes with an empty owner.
+  - https://github.com/owner/.git passes with an empty repo after the suffix is
+    removed.
+  - Query strings and fragments are ignored, so
+    https://github.com/owner/repo?tab=readme passes.
+
+  If you want those rejected, the next step would be another small red test
+  before refactoring.
+
+  Nothing is committed. A suitable green commit message would be feat: implement
+  parseGitHubUrl. After that, say "move on" for the refactor step or the next
+  red test.
+
+✻ Crunched for 21s · done 3:00 PM
+
+❯ OK great, commit it and then push. Is there anything worth cleaning up in     
+  parseGitHubUrl or its tests? If so, refactor and rerun the tests. If not,     
+  tell me why.                                                                  
+
+  Pushed to feat/repo-import-rules (ctrl+o to expand)
+
+⏺ Committed and pushed; I'm turning the four copied "accepts" tests into a table
+  and pulling the allowed hosts into a named constant next. · summary
+
+⏺ Update(lib/rules/repo-import.test.ts)
+  ⎿  Added 8 lines, removed 29 lines
+       2  import { parseGitHubUrl } from './repo-import'
+       3  
+       4  describe('parseGitHubUrl', () => {
+       5 -  it('returns the owner and repo for https://github.com/{owner}
+         -/{repo}', () => {                                              
+       6 -    expect(parseGitHubUrl('https://github.com/vercel/next.js'))
+         -.toEqual({                                                     
+       7 -      ok: true,                                                
+       8 -      owner: 'vercel',                                         
+       9 -      repo: 'next.js',                                         
+       5 +  describe('returns the owner and repo', () => {               
+       6 +    it.each([                                                  
+       7 +      ['https://github.com/vercel/next.js', 'vercel', 'next.js'
+         +],                                                             
+       8 +      ['https://github.com/owner/repo/', 'owner', 'repo'],     
+       9 +      ['https://github.com/owner/repo.git', 'owner', 'repo'],  
+      10 +      ['https://www.github.com/owner/repo', 'owner', 'repo'],  
+      11 +    ])('%s', (url, owner, repo) => {                           
+      12 +      expect(parseGitHubUrl(url)).toEqual({ ok: true, owner, re
+         +po })                                                          
+      13      })
+      14    })
+      15  
+      13 -  it('accepts a trailing slash', () => {                       
+      14 -    expect(parseGitHubUrl('https://github.com/owner/repo/')).to
+         -Equal({                                                        
+      15 -      ok: true,                                                
+      16 -      owner: 'owner',                                          
+      17 -      repo: 'repo',                                            
+      18 -    })                                                         
+      19 -  })                                                           
+      20 -                                                               
+      21 -  it('accepts a .git suffix and strips it from the repo name', 
+         -() => {                                                        
+      22 -    expect(parseGitHubUrl('https://github.com/owner/repo.git'))
+         -.toEqual({                                                     
+      23 -      ok: true,                                                
+      24 -      owner: 'owner',                                          
+      25 -      repo: 'repo',                                            
+      26 -    })                                                         
+      27 -  })                                                           
+      28 -                                                               
+      29 -  it('accepts www.github.com', () => {                         
+      30 -    expect(parseGitHubUrl('https://www.github.com/owner/repo'))
+         -.toEqual({                                                     
+      31 -      ok: true,                                                
+      32 -      owner: 'owner',                                          
+      33 -      repo: 'repo',                                            
+      34 -    })                                                         
+      35 -  })                                                           
+      36 -                                                               
+      16    it('rejects http://', () => {
+      17      expect(parseGitHubUrl('http://github.com/owner/repo').ok).t
+          oBe(false)
+      18    })
+
+⏺ Update(lib/rules/repo-import.ts)
+  ⎿  Added 2 lines
+      2    | { ok: true; owner: string; repo: string }
+      3    | { ok: false; error: string }
+      4  
+      5 +const ALLOWED_HOSTS = ['github.com', 'www.github.com']          
+      6 +                                                                
+      7  const INVALID: ParseGitHubUrlResult = {
+      8    ok: false,
+      9    error: 'Expected a URL like https://github.com/{owner}/{repo}'
+         ,
+
+⏺ Update(lib/rules/repo-import.ts)
+  ⎿  Added 1 line, removed 3 lines
+      18    }
+      19  
+      20    if (parsed.protocol !== 'https:') return INVALID
+      21 -  if (parsed.hostname !== 'github.com' && parsed.hostname !== '
+         -www.github.com') {                                             
+      22 -    return INVALID                                             
+      23 -  }                                                            
+      21 +  if (!ALLOWED_HOSTS.includes(parsed.hostname)) return INVALID 
+      22  
+      23    const segments = parsed.pathname.replace(/\/$/, '').split('/'
+          ).slice(1)
+      24    if (segments.length !== 2) return INVALID
+
+  Ran 1 shell command (ctrl+o to expand)
+
+⏺ The implementation is committed as 6348133 feat: implement parseGitHubUrl and
+  the branch is pushed to origin/feat/repo-import-rules, now tracking the
+  remote. I also made a small refactor afterwards. All 17 tests still pass, and
+  typecheck and lint are clean.
+
+  What I cleaned up
+  1. Tests: the four "accepts" tests were the same assertion with different
+     data, so they're now one it.each table of [url, owner, repo]. Test names
+     still show each URL, coverage is unchanged, and the file is 26 lines
+     shorter. Adding a new valid case is now one line.
+  2. Implementation: the host check now uses
+     ALLOWED_HOSTS.includes(parsed.hostname) instead of two !== comparisons. The
+     allowed hosts are listed in one place, which matches the PRD rule.
+
+  What I left alone, and why
+  - The rejection groups (non-URLs, http://, other hosts, missing repo, extra
+    segments) look repetitive, but each group's name matches a PRD §5.1 rule.
+    Merging them into one table would make the test output harder to trace back
+    to the spec.
+  - The single shared error message is enough for what the tests check. Separate
+    messages per case would be new behavior, which belongs in a red test first.
+  - The empty owner or repo gaps from the last step are also new behavior, not
+    cleanup, so I didn't touch them here.
+
+  The refactor isn't committed. A suitable message would be refactor: 
+  table-drive parseGitHubUrl accept cases, which would complete the red, green,
+  refactor cycle for this rule.
+
+✻ Crunched for 31s · done 3:02 PM
+
+❯ ok commit and push                                                            
+
+  Pushed to feat/repo-import-rules (ctrl+o to expand)
+
+⏺ I committed the refactor as 125db1c refactor: table-drive parseGitHubUrl 
+  accept cases and pushed it. The branch is in sync with
+  origin/feat/repo-import-rules, and the working tree is clean.
+
+  That finishes the red, green, refactor cycle for URL parsing. The next §5.1
+  rule would be file filtering: ignoring node_modules/, .git/, dist/, build/,
+  .next/, lock files and binaries. Say "move on" when you're ready for its red
+  tests.
+
+✻ Sautéed for 9s · done 3:05 PM
