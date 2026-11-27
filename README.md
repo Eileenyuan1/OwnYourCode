@@ -25,3 +25,6 @@ npm test
 - [Plan](docs/plans/repo-import-page.md)
 - [Session log](docs/session-log.md)
 - [HW4 reflection](docs/hw4-reflection.md)
+- [Sprint 1](docs/sprints/sprint-1.md)
+- [Sprint 2](docs/sprints/sprint-2.md)
+- [Sprint roadmap](docs/sprints/roadmap.md)
